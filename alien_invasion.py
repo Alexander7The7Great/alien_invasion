@@ -9,6 +9,7 @@ from bullet import Bullet
 from alien import Alien
 from stars import Star
 from random import randint
+from rain import Rain
 
 
 class AlienInvasion:
@@ -29,7 +30,10 @@ class AlienInvasion:
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
+
         
+        self.rain = pygame.sprite.Group()
+        self._create_rain()
 
         self._create_fleet()
         self.stars = pygame.sprite.Group()
@@ -49,6 +53,8 @@ class AlienInvasion:
             self._check_events()
             self.ship.update()
             self._update_bullets()
+            self._update_rain()
+            self._update_aliens()
             self._update_screen()
             self.clock.tick(120)
             # Redraw the screen during each pas through the loop.
@@ -98,6 +104,45 @@ class AlienInvasion:
             if bullet.rect.bottom <= 0:
                 self.bullets.remove(bullet)
 
+    def _create_drop(self, x_position, y_position):
+        """Create rain and place in row"""
+        new_rain = Rain(self)
+        new_rain.y = y_position
+        new_rain.rect.x = randint(0, self.settings.screen_width)
+        new_rain.rect.y = y_position
+        self.rain.add(new_rain)
+
+    def _create_rain(self):
+        """Create the down pour"""
+                 
+        rain = Rain(self)
+        rain_width, rain_height = rain.rect.size
+        
+        current_x, current_y = rain_width, rain_height
+        while current_y < (self.settings.screen_height - 2 * rain_height):
+            while current_x < (self.settings.screen_width - 3 * rain_width):
+                self._create_drop(current_x, current_y)
+                current_x += 40 * rain_width
+        
+            #Finished a row; reset x value, and increment y value
+            current_x = rain_width
+            current_y += 2 * rain_height
+
+    def _update_rain(self):
+        self.rain.update()
+        for rain in self.rain.copy():
+            if rain.check_rain_bottom():
+                rain.y = 0
+                rain.rect.y = 0
+                rain.rect.x = randint(0, self.settings.screen_width)
+            
+        
+
+    def _update_aliens(self):
+        """Check if the fleet is at an edge, then update positions"""
+        self._check_fleet_edges()
+        self.aliens.update()
+
     def _create_fleet(self):
          """Create the fleet of aliens."""
          #Create an alien and keep adding aliens until there is no more room left.
@@ -123,6 +168,19 @@ class AlienInvasion:
         new_alien.rect.y = y_position
         self.aliens.add(new_alien)
 
+    def _check_fleet_edges(self):
+        """Respond appropriately if any aliens have reached an edge."""
+        for alien in self.aliens.sprites():
+            if alien.check_edges():
+                self._change_fleet_direction()
+                break
+
+    def _change_fleet_direction(self):
+        """Drop the entire fleet and change the fleet's direction"""
+        for alien in self.aliens.sprites():
+            alien.rect.y += self.settings.fleet_drop_speed
+        self.settings.fleet_direction *= -1 
+
     def _update_screen(self):
         """update images on the screen, and flip to the new screen"""
         self.screen.fill(self.settings.bg_color)
@@ -130,6 +188,8 @@ class AlienInvasion:
             bullet.draw_bullet()
         for star in self.stars.sprites():
             star.draw_star()
+        for rain in self.rain.sprites():
+            rain.draw_rain()
 
         self.ship.blitme()
         self.aliens.draw(self.screen)
