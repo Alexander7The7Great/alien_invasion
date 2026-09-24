@@ -11,6 +11,12 @@ class Settings:
         #ship settings
         self.ship_speed = 1.5
 
+
+        self.dev_mode = False
+
+        if self.dev_mode == True:
+            self.bullet_width == 3000
+
         #Bullet settings
         self.bullet_speed = 2.0
         self.bullet_width = 3
