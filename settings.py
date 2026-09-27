@@ -10,6 +10,7 @@ class Settings:
 
         #ship settings
         self.ship_speed = 1.5
+        self.ship_limit = 3
 
 
         self.dev_mode = False
