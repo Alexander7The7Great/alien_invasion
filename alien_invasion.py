@@ -13,7 +13,11 @@ from stars import Star
 from random import randint
 from rain import Rain
 from game_stats import GameStats
+from scoreboard import Scoreboard
+
 from button import Button
+
+
 
 class AlienInvasion:
     """Overall class to manage game assets and behavior."""
@@ -36,6 +40,7 @@ class AlienInvasion:
 
         #Create an instance to store game statistics.
         self.stats = GameStats(self)
+        self.sb = Scoreboard(self)
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
@@ -298,6 +303,9 @@ class AlienInvasion:
 
         self.ship.blitme()
         self.aliens.draw(self.screen)
+
+        #scoreboard
+        self.sb.show_score()
 
         #Draw the play button if the game is inactive
         if not self.game_active:
